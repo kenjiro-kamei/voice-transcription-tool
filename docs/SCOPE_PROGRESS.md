@@ -52,6 +52,9 @@
 - [x] 初回コミット・プッシュ完了
 - [x] リポジトリURL: https://github.com/kenjiro-kamei/voice-transcription-tool
 
+### Phase 3: デザインテーマ選定
+- [x] mockups/design-theme-selector.html（4つのデザインテーマ候補）
+
 ---
 
 ## 次のアクション

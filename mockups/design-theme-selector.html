@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>デザインテーマ選択 - 音声・動画文字起こしツール</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.95;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .tab:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+    }
+
+    .tab.active {
+      background: white;
+      color: #667eea;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .theme-preview {
+      display: none;
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .theme-preview.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .theme-info {
+      padding: 30px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .theme-info h2 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .theme-info p {
+      color: #666;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .mockup-container {
+      padding: 40px;
+    }
+
+    /* Professional Dark Theme */
+    .theme-dark {
+      background: #1a1a2e;
+      color: #eee;
+    }
+
+    .theme-dark .mockup-header {
+      background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+      padding: 20px 30px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .theme-dark .app-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #64ffda;
+    }
+
+    .theme-dark .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .theme-dark .nav-link {
+      color: #a8dadc;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .theme-dark .nav-link:hover {
+      color: #64ffda;
+    }
+
+    .theme-dark .upload-area {
+      background: #16213e;
+      border: 3px dashed #0f3460;
+      border-radius: 16px;
+      padding: 60px;
+      text-align: center;
+      margin-bottom: 30px;
+      transition: all 0.3s ease;
+    }
+
+    .theme-dark .upload-area:hover {
+      border-color: #64ffda;
+      background: #1f2c4a;
+    }
+
+    .theme-dark .upload-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      color: #64ffda;
+    }
+
+    .theme-dark .upload-text {
+      font-size: 1.2rem;
+      color: #a8dadc;
+      margin-bottom: 10px;
+    }
+
+    .theme-dark .upload-subtext {
+      color: #778da9;
+      font-size: 0.9rem;
+    }
+
+    .theme-dark .result-card {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 25px;
+      margin-top: 20px;
+    }
+
+    .theme-dark .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .theme-dark .result-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #64ffda;
+    }
+
+    .theme-dark .copy-btn {
+      background: #0f3460;
+      color: #64ffda;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .theme-dark .copy-btn:hover {
+      background: #64ffda;
+      color: #16213e;
+    }
+
+    .theme-dark .transcription-text {
+      background: #0f1923;
+      padding: 20px;
+      border-radius: 8px;
+      line-height: 1.8;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+    }
+
+    /* Clean Light Theme */
+    .theme-light {
+      background: #f8f9fa;
+      color: #212529;
+    }
+
+    .theme-light .mockup-header {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .theme-light .app-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1976d2;
+    }
+
+    .theme-light .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .theme-light .nav-link {
+      color: #495057;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .theme-light .nav-link:hover {
+      color: #1976d2;
+    }
+
+    .theme-light .upload-area {
+      background: white;
+      border: 3px dashed #dee2e6;
+      border-radius: 16px;
+      padding: 60px;
+      text-align: center;
+      margin-bottom: 30px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .theme-light .upload-area:hover {
+      border-color: #1976d2;
+      box-shadow: 0 4px 20px rgba(25,118,210,0.15);
+    }
+
+    .theme-light .upload-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      color: #1976d2;
+    }
+
+    .theme-light .upload-text {
+      font-size: 1.2rem;
+      color: #212529;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .theme-light .upload-subtext {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+
+    .theme-light .result-card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      margin-top: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .theme-light .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .theme-light .result-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #212529;
+    }
+
+    .theme-light .copy-btn {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .theme-light .copy-btn:hover {
+      background: #1565c0;
+    }
+
+    .theme-light .transcription-text {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      line-height: 1.8;
+      color: #212529;
+      font-size: 0.95rem;
+      border: 1px solid #dee2e6;
+    }
+
+    /* Creative Gradient Theme */
+    .theme-gradient {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .theme-gradient .mockup-header {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      padding: 20px 30px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .theme-gradient .app-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .theme-gradient .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .theme-gradient .nav-link {
+      color: rgba(255,255,255,0.9);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .theme-gradient .nav-link:hover {
+      color: white;
+    }
+
+    .theme-gradient .upload-area {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border: 3px dashed rgba(255,255,255,0.3);
+      border-radius: 16px;
+      padding: 60px;
+      text-align: center;
+      margin-bottom: 30px;
+      transition: all 0.3s ease;
+    }
+
+    .theme-gradient .upload-area:hover {
+      border-color: rgba(255,255,255,0.6);
+      background: rgba(255,255,255,0.15);
+    }
+
+    .theme-gradient .upload-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      color: white;
+    }
+
+    .theme-gradient .upload-text {
+      font-size: 1.2rem;
+      color: white;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .theme-gradient .upload-subtext {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.9rem;
+    }
+
+    .theme-gradient .result-card {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 25px;
+      margin-top: 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .theme-gradient .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .theme-gradient .result-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    .theme-gradient .copy-btn {
+      background: white;
+      color: #667eea;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .theme-gradient .copy-btn:hover {
+      background: rgba(255,255,255,0.9);
+      transform: translateY(-2px);
+    }
+
+    .theme-gradient .transcription-text {
+      background: rgba(0,0,0,0.2);
+      padding: 20px;
+      border-radius: 8px;
+      line-height: 1.8;
+      color: white;
+      font-size: 0.95rem;
+    }
+
+    /* Minimalist Zen Theme */
+    .theme-zen {
+      background: #fafafa;
+      color: #333;
+    }
+
+    .theme-zen .mockup-header {
+      background: transparent;
+      padding: 20px 0;
+      margin-bottom: 50px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .theme-zen .app-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #333;
+      letter-spacing: -0.5px;
+    }
+
+    .theme-zen .nav-links {
+      display: flex;
+      gap: 30px;
+    }
+
+    .theme-zen .nav-link {
+      color: #666;
+      text-decoration: none;
+      font-weight: 400;
+      font-size: 0.95rem;
+      transition: color 0.3s;
+    }
+
+    .theme-zen .nav-link:hover {
+      color: #333;
+    }
+
+    .theme-zen .upload-area {
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 80px 60px;
+      text-align: center;
+      margin-bottom: 40px;
+      transition: all 0.3s ease;
+    }
+
+    .theme-zen .upload-area:hover {
+      border-color: #333;
+    }
+
+    .theme-zen .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .theme-zen .upload-text {
+      font-size: 1.1rem;
+      color: #333;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .theme-zen .upload-subtext {
+      color: #999;
+      font-size: 0.85rem;
+    }
+
+    .theme-zen .result-card {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 30px;
+      margin-top: 30px;
+    }
+
+    .theme-zen .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .theme-zen .result-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .theme-zen .copy-btn {
+      background: #333;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .theme-zen .copy-btn:hover {
+      background: #000;
+    }
+
+    .theme-zen .transcription-text {
+      background: transparent;
+      padding: 0;
+      line-height: 2;
+      color: #333;
+      font-size: 0.95rem;
+    }
+
+    .format-selector {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .format-btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    .theme-dark .format-btn {
+      background: #0f1923;
+      color: #a8dadc;
+      border: 1px solid #0f3460;
+    }
+
+    .theme-dark .format-btn:hover,
+    .theme-dark .format-btn.active {
+      background: #0f3460;
+      color: #64ffda;
+    }
+
+    .theme-light .format-btn {
+      background: #f8f9fa;
+      color: #495057;
+      border: 1px solid #dee2e6;
+    }
+
+    .theme-light .format-btn:hover,
+    .theme-light .format-btn.active {
+      background: #1976d2;
+      color: white;
+      border-color: #1976d2;
+    }
+
+    .theme-gradient .format-btn {
+      background: rgba(0,0,0,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .theme-gradient .format-btn:hover,
+    .theme-gradient .format-btn.active {
+      background: white;
+      color: #667eea;
+      border-color: white;
+    }
+
+    .theme-zen .format-btn {
+      background: white;
+      color: #666;
+      border: 1px solid #e0e0e0;
+    }
+
+    .theme-zen .format-btn:hover,
+    .theme-zen .format-btn.active {
+      background: #333;
+      color: white;
+      border-color: #333;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 1.8rem;
+      }
+
+      .tabs {
+        flex-direction: column;
+      }
+
+      .tab {
+        width: 100%;
+      }
+
+      .mockup-container {
+        padding: 20px;
+      }
+
+      .theme-dark .upload-area,
+      .theme-light .upload-area,
+      .theme-gradient .upload-area,
+      .theme-zen .upload-area {
+        padding: 40px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>デザインテーマを選択</h1>
+      <p>音声・動画文字起こしツールに最適な4つのテーマからお好みのデザインを選択してください</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTheme('dark')">Professional Dark</button>
+      <button class="tab" onclick="showTheme('light')">Clean Light</button>
+      <button class="tab" onclick="showTheme('gradient')">Creative Gradient</button>
+      <button class="tab" onclick="showTheme('zen')">Minimalist Zen</button>
+    </div>
+
+    <!-- Professional Dark Theme -->
+    <div id="theme-dark" class="theme-preview active">
+      <div class="theme-info">
+        <h2>Professional Dark</h2>
+        <p>長時間の作業に最適な目に優しいダークモード。プロフェッショナルな印象を与えながら、視認性と集中力を高める配色設計。文字起こし結果が読みやすく、疲れにくいデザインです。</p>
+      </div>
+      <div class="mockup-container theme-dark">
+        <div class="mockup-header">
+          <div class="app-title">文字起こしツール</div>
+          <div class="nav-links">
+            <a href="#" class="nav-link">メイン</a>
+            <a href="#" class="nav-link">履歴</a>
+          </div>
+        </div>
+
+        <div class="upload-area">
+          <div class="upload-icon">📁</div>
+          <div class="upload-text">ファイルをドラッグ&ドロップ</div>
+          <div class="upload-subtext">または クリックしてファイルを選択</div>
+          <div class="upload-subtext" style="margin-top: 10px;">対応形式: mp3, mp4, wav, m4a, mov（最大2GB）</div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-header">
+            <div class="result-title">📄 sample_audio.mp3 の文字起こし結果</div>
+            <button class="copy-btn">📋 コピー</button>
+          </div>
+          <div class="format-selector">
+            <button class="format-btn active">テキスト</button>
+            <button class="format-btn">Markdown</button>
+            <button class="format-btn">SRT字幕</button>
+          </div>
+          <div class="transcription-text">
+            こんにちは、今日は音声文字起こしツールの使い方についてご説明します。このツールを使えば、動画や音声ファイルから簡単に文字起こしができます。操作はとてもシンプルで、ファイルをアップロードして待つだけです。OpenAI Whisper APIにより、95%以上の高精度な日本語認識を実現しています。文字起こし結果はワンクリックでコピーでき、すぐにGoogle Docsなどのツールで活用できます。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clean Light Theme -->
+    <div id="theme-light" class="theme-preview">
+      <div class="theme-info">
+        <h2>Clean Light</h2>
+        <p>シンプルで明るく、視認性を最優先したデザイン。白を基調とした清潔感のある配色で、直感的な操作性を実現。初めてのユーザーでも迷わず使える親しみやすいインターフェースです。</p>
+      </div>
+      <div class="mockup-container theme-light">
+        <div class="mockup-header">
+          <div class="app-title">文字起こしツール</div>
+          <div class="nav-links">
+            <a href="#" class="nav-link">メイン</a>
+            <a href="#" class="nav-link">履歴</a>
+          </div>
+        </div>
+
+        <div class="upload-area">
+          <div class="upload-icon">📁</div>
+          <div class="upload-text">ファイルをドラッグ&ドロップ</div>
+          <div class="upload-subtext">または クリックしてファイルを選択</div>
+          <div class="upload-subtext" style="margin-top: 10px;">対応形式: mp3, mp4, wav, m4a, mov（最大2GB）</div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-header">
+            <div class="result-title">📄 sample_audio.mp3 の文字起こし結果</div>
+            <button class="copy-btn">📋 コピー</button>
+          </div>
+          <div class="format-selector">
+            <button class="format-btn active">テキスト</button>
+            <button class="format-btn">Markdown</button>
+            <button class="format-btn">SRT字幕</button>
+          </div>
+          <div class="transcription-text">
+            こんにちは、今日は音声文字起こしツールの使い方についてご説明します。このツールを使えば、動画や音声ファイルから簡単に文字起こしができます。操作はとてもシンプルで、ファイルをアップロードして待つだけです。OpenAI Whisper APIにより、95%以上の高精度な日本語認識を実現しています。文字起こし結果はワンクリックでコピーでき、すぐにGoogle Docsなどのツールで活用できます。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Creative Gradient Theme -->
+    <div id="theme-gradient" class="theme-preview">
+      <div class="theme-info">
+        <h2>Creative Gradient</h2>
+        <p>モダンでクリエイティブな印象を与えるグラデーションデザイン。グラスモーフィズムを取り入れた先進的なビジュアルで、創造的な作業を刺激します。視覚的に魅力的でありながら、実用性も兼ね備えたデザインです。</p>
+      </div>
+      <div class="mockup-container theme-gradient">
+        <div class="mockup-header">
+          <div class="app-title">文字起こしツール</div>
+          <div class="nav-links">
+            <a href="#" class="nav-link">メイン</a>
+            <a href="#" class="nav-link">履歴</a>
+          </div>
+        </div>
+
+        <div class="upload-area">
+          <div class="upload-icon">📁</div>
+          <div class="upload-text">ファイルをドラッグ&ドロップ</div>
+          <div class="upload-subtext">または クリックしてファイルを選択</div>
+          <div class="upload-subtext" style="margin-top: 10px;">対応形式: mp3, mp4, wav, m4a, mov（最大2GB）</div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-header">
+            <div class="result-title">📄 sample_audio.mp3 の文字起こし結果</div>
+            <button class="copy-btn">📋 コピー</button>
+          </div>
+          <div class="format-selector">
+            <button class="format-btn active">テキスト</button>
+            <button class="format-btn">Markdown</button>
+            <button class="format-btn">SRT字幕</button>
+          </div>
+          <div class="transcription-text">
+            こんにちは、今日は音声文字起こしツールの使い方についてご説明します。このツールを使えば、動画や音声ファイルから簡単に文字起こしができます。操作はとてもシンプルで、ファイルをアップロードして待つだけです。OpenAI Whisper APIにより、95%以上の高精度な日本語認識を実現しています。文字起こし結果はワンクリックでコピーでき、すぐにGoogle Docsなどのツールで活用できます。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Minimalist Zen Theme -->
+    <div id="theme-zen" class="theme-preview">
+      <div class="theme-info">
+        <h2>Minimalist Zen</h2>
+        <p>究極にシンプルで、本質に集中できるデザイン。余分な装飾を排除し、コンテンツそのものに焦点を当てた禅のような静けさを実現。文字起こし結果の読みやすさを最大限に高め、長文でも疲れずに読み進められます。</p>
+      </div>
+      <div class="mockup-container theme-zen">
+        <div class="mockup-header">
+          <div class="app-title">文字起こしツール</div>
+          <div class="nav-links">
+            <a href="#" class="nav-link">メイン</a>
+            <a href="#" class="nav-link">履歴</a>
+          </div>
+        </div>
+
+        <div class="upload-area">
+          <div class="upload-icon">📁</div>
+          <div class="upload-text">ファイルをドラッグ&ドロップ</div>
+          <div class="upload-subtext">または クリックしてファイルを選択</div>
+          <div class="upload-subtext" style="margin-top: 10px;">対応形式: mp3, mp4, wav, m4a, mov（最大2GB）</div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-header">
+            <div class="result-title">📄 sample_audio.mp3 の文字起こし結果</div>
+            <button class="copy-btn">📋 コピー</button>
+          </div>
+          <div class="format-selector">
+            <button class="format-btn active">テキスト</button>
+            <button class="format-btn">Markdown</button>
+            <button class="format-btn">SRT字幕</button>
+          </div>
+          <div class="transcription-text">
+            こんにちは、今日は音声文字起こしツールの使い方についてご説明します。このツールを使えば、動画や音声ファイルから簡単に文字起こしができます。操作はとてもシンプルで、ファイルをアップロードして待つだけです。OpenAI Whisper APIにより、95%以上の高精度な日本語認識を実現しています。文字起こし結果はワンクリックでコピーでき、すぐにGoogle Docsなどのツールで活用できます。
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showTheme(themeName) {
+      // すべてのタブとプレビューの active クラスを削除
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.theme-preview').forEach(preview => preview.classList.remove('active'));
+
+      // 選択されたタブとプレビューに active クラスを追加
+      event.target.classList.add('active');
+      document.getElementById('theme-' + themeName).classList.add('active');
+    }
+
+    // フォーマット選択ボタンのインタラクション
+    document.addEventListener('DOMContentLoaded', function() {
+      const formatSelectors = document.querySelectorAll('.format-selector');
+
+      formatSelectors.forEach(selector => {
+        const buttons = selector.querySelectorAll('.format-btn');
+        buttons.forEach(button => {
+          button.addEventListener('click', function() {
+            buttons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+          });
+        });
+      });
+    });
+  </script>
+</body>
+</html>
