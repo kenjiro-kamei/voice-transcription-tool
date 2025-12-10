@@ -10,7 +10,7 @@
 ## Phase進捗
 
 - [x] Phase 1: 要件定義
-- [ ] Phase 2: Git/GitHub管理（推奨、スキップ可）
+- [x] Phase 2: Git/GitHub管理（推奨、スキップ可）
 - [ ] Phase 3: フロントエンド基盤
 - [ ] Phase 4: ページ実装
 - [ ] Phase 5: バックエンド基盤
@@ -40,6 +40,17 @@
 - [x] CLAUDE.md（プロジェクト設定）
 - [x] .eslintrc.json（ESLint設定）
 - [x] .flake8（Python Lint設定）
+
+### Phase 2: Git/GitHub管理
+- [x] Git/GitHub CLI環境構築
+- [x] GitHub認証設定
+- [x] Gitリポジトリ初期化（main branch）
+- [x] .gitignore（機密情報保護）
+- [x] Git hooks（pre-commit, prepare-commit-msg）
+- [x] GitHub Actions CI/CD設定
+- [x] GitHubリモートリポジトリ作成
+- [x] 初回コミット・プッシュ完了
+- [x] リポジトリURL: https://github.com/kenjiro-kamei/voice-transcription-tool
 
 ---
 
