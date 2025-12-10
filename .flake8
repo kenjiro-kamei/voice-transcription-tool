@@ -1,0 +1,22 @@
+[flake8]
+max-line-length = 120
+max-complexity = 10
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    env,
+    build,
+    dist,
+    migrations
+
+# AI開発最適化基準
+per-file-ignores =
+    __init__.py:F401
+
+# 推奨値（実証データに基づく）
+# - 行長: 120文字
+# - 関数行数: 100行（96.7%カバー）
+# - ファイル行数: 700行（96.9%カバー）
+# - 複雑度: 10
