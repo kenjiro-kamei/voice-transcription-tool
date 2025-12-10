@@ -11,7 +11,7 @@
 
 - [x] Phase 1: 要件定義
 - [x] Phase 2: Git/GitHub管理（推奨、スキップ可）
-- [ ] Phase 3: フロントエンド基盤
+- [x] Phase 3: フロントエンド基盤
 - [ ] Phase 4: ページ実装
 - [ ] Phase 5: バックエンド基盤
 - [ ] Phase 6: API実装
@@ -52,8 +52,16 @@
 - [x] 初回コミット・プッシュ完了
 - [x] リポジトリURL: https://github.com/kenjiro-kamei/voice-transcription-tool
 
-### Phase 3: デザインテーマ選定
-- [x] mockups/design-theme-selector.html（4つのデザインテーマ候補）
+### Phase 3: フロントエンド基盤
+- [x] デザインテーマ選定（Clean Light選択）
+- [x] Vite + React + TypeScript環境構築
+- [x] MUIテーマシステム実装
+- [x] レイアウトシステム（MainLayout + Header）
+- [x] ルーティングシステム（React Router v6）
+- [x] 基本ページ実装（文字起こしメイン + 履歴一覧）
+- [x] セキュリティ基盤（ESLint + logger + セキュリティヘッダー）
+- [x] 3層テスト基盤（Vitest + Storybook + Playwright）
+- [x] 品質チェック完了（ビルド・型・Lint: 0エラー）
 
 ---
 
