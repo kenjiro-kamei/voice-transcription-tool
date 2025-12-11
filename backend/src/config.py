@@ -5,6 +5,7 @@ Loads environment variables from .env.local in the project root.
 
 import os
 from pathlib import Path
+from typing import Optional
 from pydantic_settings import BaseSettings
 
 
@@ -17,11 +18,11 @@ class Settings(BaseSettings):
     # OpenAI API
     OPENAI_API_KEY: str
 
-    # Cloudflare R2
-    R2_ACCOUNT_ID: str
-    R2_ACCESS_KEY_ID: str
-    R2_SECRET_ACCESS_KEY: str
-    R2_BUCKET_NAME: str
+    # Cloudflare R2 (Optional - uses local storage if not configured)
+    R2_ACCOUNT_ID: Optional[str] = None
+    R2_ACCESS_KEY_ID: Optional[str] = None
+    R2_SECRET_ACCESS_KEY: Optional[str] = None
+    R2_BUCKET_NAME: Optional[str] = None
 
     # Redis
     REDIS_URL: str
