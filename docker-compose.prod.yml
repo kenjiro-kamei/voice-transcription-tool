@@ -1,0 +1,149 @@
+version: '3.8'
+
+# Production Docker Compose
+# Usage: docker compose -f docker-compose.prod.yml up -d
+#
+# Note: In production, consider using:
+# - Cloud Run / ECS / Kubernetes for container orchestration
+# - Neon / RDS for managed PostgreSQL
+# - Redis Cloud / ElastiCache for managed Redis
+# - Cloudflare R2 / S3 for object storage
+
+services:
+  # Frontend (React) - Production
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-https://api.your-domain.com}
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # Backend API (FastAPI) - Production
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8567:8567"
+    env_file:
+      - .env.production
+    environment:
+      - ENVIRONMENT=production
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8567/api/health/live')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Celery Worker - Production
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A src.celery_app worker --loglevel=warning --concurrency=4
+    env_file:
+      - .env.production
+    environment:
+      - ENVIRONMENT=production
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Redis - Production
+  # Note: In production, prefer managed Redis (Redis Cloud, ElastiCache)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 100mb
+      --maxmemory-policy allkeys-lru
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redis_data:
+
+# Production Notes:
+# -----------------
+# 1. Database: Use external managed PostgreSQL (Neon, RDS, Cloud SQL)
+#    - Set DATABASE_URL in .env.production
+#    - Run migrations before deployment: alembic upgrade head
+#
+# 2. Redis: Consider using managed Redis for production
+#    - Redis Cloud: 30MB free tier
+#    - AWS ElastiCache or Google Memorystore for larger scale
+#
+# 3. Object Storage: Already configured for Cloudflare R2
+#    - Set R2_* environment variables in .env.production
+#
+# 4. Secrets Management:
+#    - Use Docker secrets or external secret management
+#    - Never commit .env.production to version control
+#
+# 5. Logging:
+#    - Configure log aggregation (CloudWatch, Datadog, etc.)
+#    - Set appropriate log levels for production
+#
+# 6. Monitoring:
+#    - Set up health check monitoring
+#    - Configure alerts for /api/health endpoint
+#
+# 7. SSL/TLS:
+#    - Use a reverse proxy (Nginx, Traefik) with Let's Encrypt
+#    - Or deploy behind a load balancer with managed certificates

@@ -13,8 +13,8 @@
     "test:coverage": "vitest --coverage",
     "storybook": "storybook dev -p 6007",
     "build-storybook": "storybook build",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e": "LD_LIBRARY_PATH=/home/kamei/test/.local/usr/lib/x86_64-linux-gnu:/home/kamei/test/.local/usr/lib/x86_64-linux-gnu/nss:$LD_LIBRARY_PATH playwright test",
+    "test:e2e:ui": "LD_LIBRARY_PATH=/home/kamei/test/.local/usr/lib/x86_64-linux-gnu:/home/kamei/test/.local/usr/lib/x86_64-linux-gnu/nss:$LD_LIBRARY_PATH playwright test --ui"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
