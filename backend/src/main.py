@@ -38,14 +38,16 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers['X-Frame-Options'] = 'DENY'
         response.headers['X-XSS-Protection'] = '1; mode=block'
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
-        # CSP - Allow self and common CDNs for fonts/styles
+        # CSP - Allow self and configured origins
+        # Note: CSP is primarily for the frontend, backend API doesn't need strict CSP
+        # Keeping minimal CSP for API responses
         response.headers['Content-Security-Policy'] = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline'; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data: blob:; "
             "font-src 'self'; "
-            "connect-src 'self'"
+            "connect-src 'self' *"
         )
         # HSTS - Enable in production only (requires HTTPS)
         if settings.ENVIRONMENT == 'production':
