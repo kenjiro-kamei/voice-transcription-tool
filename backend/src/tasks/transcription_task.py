@@ -83,8 +83,10 @@ def _process_transcription_internal(job_id: str, celery_task=None) -> None:
             logger.info(f'Calling Whisper API for job {job_id}, file: {temp_file_path}, size: {os.path.getsize(temp_file_path)} bytes')
             with open(temp_file_path, 'rb') as audio_file:
                 try:
+                    # Strip any whitespace/newlines from API key
+                    api_key = settings.OPENAI_API_KEY.strip().replace('\n', '').replace('\r', '')
                     headers = {
-                        'Authorization': f'Bearer {settings.OPENAI_API_KEY}',
+                        'Authorization': f'Bearer {api_key}',
                     }
                     files = {
                         'file': (os.path.basename(temp_file_path), audio_file, 'audio/mpeg'),
