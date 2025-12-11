@@ -6,7 +6,7 @@ import logging
 from typing import List
 from uuid import UUID
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Body
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Body, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from src.database import get_db
@@ -18,7 +18,7 @@ from src.schemas import (
 )
 from src.services.r2_service import r2_service
 from src.services.transcription_service import transcription_service
-from src.tasks.transcription_task import process_transcription
+from src.tasks.transcription_task import process_transcription_sync
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +27,7 @@ router = APIRouter()
 
 @router.post('/transcriptions/upload', response_model=TranscriptionJobResponse, status_code=status.HTTP_201_CREATED)
 async def upload_file_for_transcription(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ) -> TranscriptionJobResponse:
@@ -37,10 +38,11 @@ async def upload_file_for_transcription(
     1. Validate file (type and size)
     2. Upload file to R2 storage
     3. Create database record with status='processing'
-    4. Queue Celery task for transcription
+    4. Queue background task for transcription
     5. Return job details immediately
 
     Args:
+        background_tasks: FastAPI background tasks
         file: Audio or video file to transcribe
         db: Database session
 
@@ -53,9 +55,9 @@ async def upload_file_for_transcription(
     # Create transcription job (validates, uploads to R2, creates DB record)
     job = await transcription_service.create_transcription_job(file, db)
 
-    # Queue Celery task for async processing
-    process_transcription.delay(str(job.id))
-    logger.info(f'Queued transcription task for job {job.id}')
+    # Queue background task for async processing (no Celery needed)
+    background_tasks.add_task(process_transcription_sync, str(job.id))
+    logger.info(f'Queued background transcription task for job {job.id}')
 
     return TranscriptionJobResponse.from_orm(job)
 

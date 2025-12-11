@@ -25,10 +25,17 @@ WHISPER_MAX_FILE_SIZE = 25 * 1024 * 1024
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
 
-@celery_app.task(bind=True, max_retries=3)
-def process_transcription(self, job_id: str) -> None:
+def process_transcription_sync(job_id: str) -> None:
     """
-    Process transcription using OpenAI Whisper API.
+    Process transcription synchronously (without Celery).
+    Used when Celery worker is not available.
+    """
+    _process_transcription_internal(job_id)
+
+
+def _process_transcription_internal(job_id: str, celery_task=None) -> None:
+    """
+    Internal function to process transcription using OpenAI Whisper API.
 
     Process flow:
     1. Download file from R2
@@ -38,9 +45,10 @@ def process_transcription(self, job_id: str) -> None:
 
     Args:
         job_id: UUID of the transcription job (as string)
+        celery_task: Optional Celery task instance for retry support
 
     Raises:
-        Exception: If processing fails after retries
+        Exception: If processing fails
     """
     job_uuid = UUID(job_id)
     db = SessionLocal()
@@ -110,11 +118,25 @@ def process_transcription(self, job_id: str) -> None:
             logger.error(f'Failed to update job error status: {db_error}')
             db.rollback()
 
-        # Retry with exponential backoff
-        raise self.retry(exc=e, countdown=60 * (2 ** self.request.retries))
+        # Retry with Celery if available
+        if celery_task:
+            raise celery_task.retry(exc=e, countdown=60 * (2 ** celery_task.request.retries))
+        else:
+            raise
 
     finally:
         db.close()
+
+
+@celery_app.task(bind=True, max_retries=3)
+def process_transcription(self, job_id: str) -> None:
+    """
+    Process transcription using OpenAI Whisper API (Celery task).
+
+    Args:
+        job_id: UUID of the transcription job (as string)
+    """
+    _process_transcription_internal(job_id, celery_task=self)
 
 
 def _download_file_from_r2(file_url: str) -> bytes:
