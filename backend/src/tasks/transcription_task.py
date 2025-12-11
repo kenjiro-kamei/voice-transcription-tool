@@ -21,8 +21,11 @@ logger = logging.getLogger(__name__)
 # OpenAI Whisper API file size limit (25MB)
 WHISPER_MAX_FILE_SIZE = 25 * 1024 * 1024
 
-# Initialize OpenAI client
-client = OpenAI(api_key=settings.OPENAI_API_KEY)
+# Initialize OpenAI client with extended timeout for large files
+client = OpenAI(
+    api_key=settings.OPENAI_API_KEY,
+    timeout=300.0,  # 5 minutes timeout for large audio files
+)
 
 
 def process_transcription_sync(job_id: str) -> None:
@@ -80,14 +83,18 @@ def _process_transcription_internal(job_id: str, celery_task=None) -> None:
 
         try:
             # Call Whisper API
-            logger.info(f'Calling Whisper API for job {job_id}')
+            logger.info(f'Calling Whisper API for job {job_id}, file: {temp_file_path}, size: {os.path.getsize(temp_file_path)} bytes')
             with open(temp_file_path, 'rb') as audio_file:
-                transcript = client.audio.transcriptions.create(
-                    model='whisper-1',
-                    file=audio_file,
-                    language='ja',
-                    response_format='text',
-                )
+                try:
+                    transcript = client.audio.transcriptions.create(
+                        model='whisper-1',
+                        file=audio_file,
+                        language='ja',
+                        response_format='text',
+                    )
+                except Exception as api_error:
+                    logger.error(f'Whisper API error for job {job_id}: {type(api_error).__name__}: {api_error}')
+                    raise
 
             # Update job with result
             job.transcription_text = transcript
